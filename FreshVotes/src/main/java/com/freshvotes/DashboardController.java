@@ -10,9 +10,4 @@ public class DashboardController {
 	public String rootView() {
 		return "index";
 	}
-	
-	@GetMapping("/login")
-	String login() {
-		return "login";
-	}
 }
