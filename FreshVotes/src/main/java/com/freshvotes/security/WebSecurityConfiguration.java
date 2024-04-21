@@ -6,9 +6,13 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
+import static org.springframework.security.config.Customizer.withDefaults;
 
 
 @Configuration
@@ -16,35 +20,33 @@ import org.springframework.security.web.SecurityFilterChain;
 public class WebSecurityConfiguration {
 	
 	@Bean
-	public SecurityFilterChain securityFilterChain (HttpSecurity http) throws Exception
-	{
-		http
-        .authorizeHttpRequests((authz) -> authz
-        	.requestMatchers("/").permitAll()
-        	.requestMatchers("/login").permitAll()
-            .requestMatchers("/admin").hasRole("ADMIN")
-            .requestMatchers("/user").hasRole("USER")
-            .anyRequest().authenticated()
-        );
-    return http.build();
+	public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
+		UserDetails user1 = User.withUsername("admin")
+				 .password(passwordEncoder.encode("admin123")) 
+				 .roles("ADMIN") 
+				 .build();
 		
+		UserDetails user2 = User.withUsername("user")
+				 .password (passwordEncoder.encode("user123")) 
+				 .roles("USER") 
+				 .build();
+		
+		return new InMemoryUserDetailsManager(user1, user2);
 	}
 	
 	@Bean
-	public InMemoryUserDetailsManager userDetailsManager() 
-	{
-		UserDetails admin = User.builder()
-				.username("testUserOne")
-				.password("password1")
-				.roles("ADMIN")
-				.build();
-		
-		UserDetails user = User.builder()
-				.username("testUserTwo")
-				.password("password2")
-				.roles("USER")
-				.build();
-		
-		return new InMemoryUserDetailsManager(admin, user);
+	public PasswordEncoder encoder() { 
+		return new BCryptPasswordEncoder(); 
+	}
+	
+	public SecurityFilterChain configure(HttpSecurity http)throws Exception {
+		return http .authorizeHttpRequests((auth) -> {
+            auth.requestMatchers("/").permitAll();
+            auth.requestMatchers("/customlogin").hasAnyRole("ADMIN", "USER");
+            auth.requestMatchers("/dashboard").hasRole("USER");
+            auth.requestMatchers("/library/books").hasRole("ADMIN");
+        })
+                .formLogin(withDefaults())
+                .build();
 	}
 }
