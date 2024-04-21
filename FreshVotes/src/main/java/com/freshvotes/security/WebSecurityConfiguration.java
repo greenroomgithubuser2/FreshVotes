@@ -20,7 +20,8 @@ public class WebSecurityConfiguration {
 	{
 		http
         .authorizeHttpRequests((authz) -> authz
-.requestMatchers("/").permitAll()
+        	.requestMatchers("/").permitAll()
+        	.requestMatchers("/login").permitAll()
             .requestMatchers("/admin").hasRole("ADMIN")
             .requestMatchers("/user").hasRole("USER")
             .anyRequest().authenticated()
