@@ -15,3 +15,7 @@ buildNumber.properties
 .project
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
+FreshVotes/mvnw
+FreshVotes/mvnw.cmd
+FreshVotes/.mvn/
+FreshVotes/.gitignore
